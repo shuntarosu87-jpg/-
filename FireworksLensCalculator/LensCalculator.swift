@@ -93,7 +93,8 @@ class LensCalculator: ObservableObject {
         FireworksSize(number: 8, name: "8号", launchHeight: 280, spreadDiameter: 280),
         FireworksSize(number: 10, name: "10号", launchHeight: 330, spreadDiameter: 320),
         FireworksSize(number: 20, name: "20号", launchHeight: 500, spreadDiameter: 480),
-        FireworksSize(number: 30, name: "30号", launchHeight: 600, spreadDiameter: 550)
+        FireworksSize(number: 30, name: "30号", launchHeight: 600, spreadDiameter: 550),
+        FireworksSize(number: 40, name: "40号", launchHeight: 700, spreadDiameter: 700)
     ]
     
     init() {
