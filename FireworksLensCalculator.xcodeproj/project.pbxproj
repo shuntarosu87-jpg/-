@@ -11,6 +11,7 @@
 		A1000003 /* ContentView.swift */ = {isa = PBXBuildFile; fileRef = A1000004 /* ContentView.swift */; };
 		A1000005 /* LensCalculator.swift */ = {isa = PBXBuildFile; fileRef = A1000006 /* LensCalculator.swift */; };
 		A1000007 /* PreviewView.swift */ = {isa = PBXBuildFile; fileRef = A1000008 /* PreviewView.swift */; };
+		A1000014 /* SideView.swift */ = {isa = PBXBuildFile; fileRef = A1000016 /* SideView.swift */; };
 		A1000009 /* Assets.xcassets */ = {isa = PBXBuildFile; fileRef = A1000010 /* Assets.xcassets */; };
 		A1000011 /* Preview Assets.xcassets */ = {isa = PBXBuildFile; fileRef = A1000012 /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -21,6 +22,7 @@
 		A1000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1000006 /* LensCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LensCalculator.swift; sourceTree = "<group>"; };
 		A1000008 /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
+		A1000016 /* SideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideView.swift; sourceTree = "<group>"; };
 		A1000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1000012 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A1000013 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 				A1000004 /* ContentView.swift */,
 				A1000006 /* LensCalculator.swift */,
 				A1000008 /* PreviewView.swift */,
+				A1000016 /* SideView.swift */,
 				A1000010 /* Assets.xcassets */,
 				A1000013 /* Info.plist */,
 				A1000015 /* Preview Content */,
@@ -144,6 +147,7 @@
 				A1000001 /* FireworksLensCalculatorApp.swift */,
 				A1000005 /* LensCalculator.swift */,
 				A1000007 /* PreviewView.swift */,
+				A1000014 /* SideView.swift */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

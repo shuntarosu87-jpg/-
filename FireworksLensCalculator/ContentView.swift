@@ -20,8 +20,11 @@ struct ContentView: View {
                     // 結果セクション
                     resultSection
                     
-                    // プレビューセクション
+                    // プレビューセクション（正面図）
                     previewSection
+                    
+                    // 側面図セクション
+                    sideViewSection
                 }
                 .padding()
             }
@@ -173,6 +176,38 @@ struct ContentView: View {
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+    }
+    
+    // MARK: - Side View Section
+    private var sideViewSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("側面図（横から見たイメージ）")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            SideView(calculator: calculator)
+                .frame(height: 400)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(.separator), lineWidth: 1)
+                )
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("• 青い線: カメラの画角範囲")
+                    Text("• 赤い線: 花火の高さ範囲")
+                    Text("• 緑の線: 撮影距離")
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+                
+                Spacer()
             }
         }
         .padding()
