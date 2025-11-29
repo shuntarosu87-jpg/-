@@ -13,15 +13,15 @@ struct FireworksSize: Identifiable, Equatable {
     let id: Int
     let number: Int
     let name: String
-    let diameter: Double  // 直径（m）
-    let height: Double    // 高さ（m）
+    let launchHeight: Double      // 上がる高さ（m）
+    let spreadDiameter: Double     // 開いたときの直径（m）
     
-    init(number: Int, name: String, diameter: Double, height: Double) {
+    init(number: Int, name: String, launchHeight: Double, spreadDiameter: Double) {
         self.id = number
         self.number = number
         self.name = name
-        self.diameter = diameter
-        self.height = height
+        self.launchHeight = launchHeight
+        self.spreadDiameter = spreadDiameter
     }
 }
 
@@ -35,7 +35,7 @@ class LensCalculator: ObservableObject {
         didSet { calculate() }
     }
     
-    @Published var selectedFireworksSize: FireworksSize = FireworksSize.fireworksSizes[2] { // デフォルト: 10号玉
+    @Published var selectedFireworksSize: FireworksSize = FireworksSize.fireworksSizes[6] { // デフォルト: 10号玉
         didSet { calculate() }
     }
     
@@ -83,13 +83,17 @@ class LensCalculator: ObservableObject {
         }
     }
     
-    // 花火の号数データ
+    // 花火の号数データ（打ち上げ花火の諸元に基づく）
     static let fireworksSizes: [FireworksSize] = [
-        FireworksSize(number: 3, name: "3号", diameter: 60, height: 120),
-        FireworksSize(number: 6, name: "6号", diameter: 180, height: 220),
-        FireworksSize(number: 10, name: "10号", diameter: 280, height: 330),
-        FireworksSize(number: 30, name: "30号", diameter: 600, height: 550),
-        FireworksSize(number: 40, name: "40号", diameter: 700, height: 700)
+        FireworksSize(number: 3, name: "3号", launchHeight: 120, spreadDiameter: 60),
+        FireworksSize(number: 4, name: "4号", launchHeight: 160, spreadDiameter: 130),
+        FireworksSize(number: 5, name: "5号", launchHeight: 190, spreadDiameter: 170),
+        FireworksSize(number: 6, name: "6号", launchHeight: 220, spreadDiameter: 220),
+        FireworksSize(number: 7, name: "7号", launchHeight: 250, spreadDiameter: 240),
+        FireworksSize(number: 8, name: "8号", launchHeight: 280, spreadDiameter: 280),
+        FireworksSize(number: 10, name: "10号", launchHeight: 330, spreadDiameter: 320),
+        FireworksSize(number: 20, name: "20号", launchHeight: 500, spreadDiameter: 480),
+        FireworksSize(number: 30, name: "30号", launchHeight: 600, spreadDiameter: 550)
     ]
     
     init() {
@@ -99,8 +103,16 @@ class LensCalculator: ObservableObject {
     // MARK: - Calculation
     private func calculate() {
         // 花火のサイズ情報を取得
-        // 花火の高さは開いた時の高さ（地上から上端まで）
-        let fireworksHeight = selectedFireworksSize.height
+        let launchHeight = selectedFireworksSize.launchHeight      // 上がる高さ
+        let spreadDiameter = selectedFireworksSize.spreadDiameter // 開いたときの直径
+        
+        // 花火の中心位置は打ち上げ高さ
+        // 花火が開いた時の範囲：中心から上下に直径/2ずつ広がる
+        let fireworksTop = launchHeight + spreadDiameter / 2
+        let fireworksBottom = max(0, launchHeight - spreadDiameter / 2)  // 地上より下にならない
+        
+        // 花火の実際の高さ（上端から下端まで）
+        let actualFireworksHeight = fireworksTop - fireworksBottom
         
         // 地上の割合から、空の割合を計算
         let skyRatio = (100 - groundRatio) / 100
@@ -108,7 +120,7 @@ class LensCalculator: ObservableObject {
         // 花火全体が画面に収まるようにするため、花火の高さを画面の空部分に収める
         // 花火の高さを画面に収めるために必要な画角
         // 画角 = 2 * arctan(被写体の高さ / (2 * 距離))
-        let verticalAngleForFireworksRad = 2 * atan(fireworksHeight / (2 * distance))
+        let verticalAngleForFireworksRad = 2 * atan(actualFireworksHeight / (2 * distance))
         
         // 空の部分に収めるために、画角を調整
         // 空の部分の割合で割ることで、より広い画角が必要になる
@@ -128,19 +140,21 @@ class LensCalculator: ObservableObject {
     
     // MARK: - Helper Properties
     var fireworksDiameter: Double {
-        selectedFireworksSize.diameter
+        selectedFireworksSize.spreadDiameter  // 開いたときの直径
     }
     
     var fireworksHeight: Double {
-        selectedFireworksSize.height
+        let top = fireworksTop
+        let bottom = fireworksBottom
+        return top - bottom  // 花火の実際の高さ
     }
     
     var fireworksTop: Double {
-        selectedFireworksSize.height  // 花火の上端（地上から）
+        selectedFireworksSize.launchHeight + selectedFireworksSize.spreadDiameter / 2
     }
     
     var fireworksBottom: Double {
-        0  // 花火の下端は地上
+        max(0, selectedFireworksSize.launchHeight - selectedFireworksSize.spreadDiameter / 2)
     }
     
     var totalHeight: Double {
@@ -152,11 +166,11 @@ class LensCalculator: ObservableObject {
     }
     
     var spreadMeters: Double {
-        fireworksHeight  // 花火の高さが広がりに相当
+        selectedFireworksSize.spreadDiameter  // 開いたときの直径
     }
     
-    // 花火の中心位置（高さの半分）
+    // 花火の中心位置（打ち上げ高さ）
     var fireworksCenterHeight: Double {
-        fireworksHeight / 2
+        selectedFireworksSize.launchHeight
     }
 }

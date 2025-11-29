@@ -78,12 +78,12 @@ struct ContentView: View {
                         Text(size.name).tag(size)
                     }
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.menu)
                 
                 HStack {
-                    Text("直径: \(Int(calculator.fireworksDiameter))m")
+                    Text("打ち上げ高さ: \(Int(calculator.selectedFireworksSize.launchHeight))m")
                     Spacer()
-                    Text("高さ: \(Int(calculator.fireworksHeight))m")
+                    Text("開いた直径: \(Int(calculator.fireworksDiameter))m")
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
