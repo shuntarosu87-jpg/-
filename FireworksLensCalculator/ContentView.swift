@@ -68,35 +68,41 @@ struct ContentView: View {
             .background(Color(.systemBackground))
             .cornerRadius(12)
             
-            // 打ち上げ高さ
+            // 花火の号数選択
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("花火の打ち上げ高さ")
-                    Spacer()
-                    Text("\(Int(calculator.launchHeight))m")
-                        .foregroundColor(.secondary)
+                Text("花火の号数")
+                    .font(.headline)
+                
+                Picker("花火の号数", selection: $calculator.selectedFireworksSize) {
+                    ForEach(LensCalculator.fireworksSizes) { size in
+                        Text(size.name).tag(size)
+                    }
                 }
-                Slider(value: $calculator.launchHeight, in: 50...1000, step: 10)
-                Text("一般的な花火の高さは200-400m")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                .pickerStyle(.segmented)
+                
+                HStack {
+                    Text("直径: \(Int(calculator.fireworksDiameter))m")
+                    Spacer()
+                    Text("高さ: \(Int(calculator.fireworksHeight))m")
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(12)
             
-            // 花火の広がり（尺）
+            // センサーサイズ選択
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("花火が開いた時の広がり")
-                    Spacer()
-                    Text(String(format: "%.1f尺", calculator.spreadShaku))
-                        .foregroundColor(.secondary)
+                Text("センサーサイズ")
+                    .font(.headline)
+                
+                Picker("センサーサイズ", selection: $calculator.sensorSize) {
+                    ForEach(LensCalculator.SensorSize.allCases, id: \.self) { size in
+                        Text(size.displayName).tag(size)
+                    }
                 }
-                Slider(value: $calculator.spreadShaku, in: 0...4, step: 0.1)
-                Text("最大4尺まで（1尺 ≈ 3.03m）")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                .pickerStyle(.menu)
             }
             .padding()
             .background(Color(.systemBackground))
@@ -161,6 +167,7 @@ struct ContentView: View {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("距離: \(Int(calculator.distance))m")
+                    Text("花火: \(calculator.selectedFireworksSize.name)")
                     Text("地上割合: \(Int(calculator.groundRatio))%")
                     Text("レンズ: \(calculator.recommendedLensMm)mm")
                 }

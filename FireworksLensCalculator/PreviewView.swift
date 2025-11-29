@@ -95,16 +95,16 @@ struct PreviewView: View {
         // 距離に応じてスケール調整（近いほど大きく見える）
         let scale = min(1.0, 500.0 / calculator.distance)
         
-        // 花火の中心位置（打ち上げ高さに対応）
+        // 花火の中心位置（高さの半分の位置）
         // 空の部分の高さに対して、花火の中心位置を計算
         let totalHeight = calculator.totalHeight
-        let fireworksCenterRatio = calculator.launchHeight / totalHeight
+        let fireworksCenterRatio = calculator.fireworksCenterHeight / totalHeight
         let fireworksCenterY = skyHeight * CGFloat(fireworksCenterRatio) * scale
         
-        // 花火の半径（広がりに基づく）
-        // 花火の実際の高さ（広がり）を画面の高さにマッピング
-        let fireworksHeightRatio = calculator.spreadMeters / totalHeight
-        let fireworksRadius = skyHeight * CGFloat(fireworksHeightRatio / 2) * scale
+        // 花火の半径（直径の半分を表示）
+        // 花火の直径を画面の幅にマッピング（ただし、高さも考慮）
+        let fireworksDiameterRatio = calculator.fireworksDiameter / totalHeight
+        let fireworksRadius = skyHeight * CGFloat(fireworksDiameterRatio / 2) * scale
         
         return ZStack {
             // 花火の円（複数の円で表現）
@@ -162,7 +162,7 @@ struct PreviewView: View {
         
         // 花火の中心位置を計算（fireworks関数と同じロジック）
         let scale = min(1.0, 500.0 / calculator.distance)
-        let fireworksCenterRatio = calculator.launchHeight / calculator.totalHeight
+        let fireworksCenterRatio = calculator.fireworksCenterHeight / calculator.totalHeight
         let fireworksCenterY = skyHeight * CGFloat(fireworksCenterRatio) * scale
         
         return Group {
