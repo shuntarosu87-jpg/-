@@ -1,0 +1,18 @@
+# ウォッチリスト（監視する株のティッカーシンボル）
+watchlist:
+  - AAPL  # Apple Inc.
+  - MSFT  # Microsoft Corporation
+  - GOOGL # Alphabet Inc.
+  - AMZN  # Amazon.com Inc.
+  - TSLA  # Tesla Inc.
+
+# レポート設定
+report:
+  output_dir: "./reports"
+  format: "html"  # html, pdf, excel
+  language: "ja"  # 日本語
+
+# スケジュール設定
+schedule:
+  day_of_week: "monday"  # レポート生成日（monday, tuesday, ..., sunday）
+  time: "09:00"  # レポート生成時刻（24時間形式）
