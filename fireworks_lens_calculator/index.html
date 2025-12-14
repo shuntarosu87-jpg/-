@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>花火撮影レンズ計算ツール</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎆 花火撮影レンズ計算ツール</h1>
+            <p>撮影距離と地上の割合から最適なレンズmm数を計算します</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>撮影設定</h2>
+                
+                <div class="form-group">
+                    <label for="distance">撮影地から花火までの距離 (m)</label>
+                    <input type="number" id="distance" min="50" max="5000" value="500" step="10">
+                    <span class="unit">m</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="groundRatio">地上の割合 (%)</label>
+                    <input type="number" id="groundRatio" min="0" max="100" value="30" step="5">
+                    <span class="unit">%</span>
+                    <small>画面に占める地上部分の割合</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="sensorSize">センサーサイズ</label>
+                    <select id="sensorSize">
+                        <option value="full">フルサイズ (36×24mm)</option>
+                        <option value="aps-c">APS-C (23.6×15.7mm)</option>
+                        <option value="m43">マイクロフォーサーズ (17.3×13mm)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fireworksHeight">花火の高さ (m)</label>
+                    <input type="number" id="fireworksHeight" min="50" max="1000" value="300" step="10">
+                    <span class="unit">m</span>
+                    <small>一般的な花火の高さは200-400m</small>
+                </div>
+
+                <div class="result-section">
+                    <h2>推奨レンズmm数</h2>
+                    <div class="result-box">
+                        <span class="result-value" id="lensMm">--</span>
+                        <span class="result-unit">mm</span>
+                    </div>
+                    <div class="result-info">
+                        <p id="angleInfo"></p>
+                        <p id="coverageInfo"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <h2>構図プレビュー</h2>
+                <div class="preview-container">
+                    <canvas id="previewCanvas"></canvas>
+                    <div class="preview-info">
+                        <p>距離: <span id="previewDistance">500</span>m</p>
+                        <p>地上割合: <span id="previewGroundRatio">30</span>%</p>
+                        <p>レンズ: <span id="previewLens">--</span>mm</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
