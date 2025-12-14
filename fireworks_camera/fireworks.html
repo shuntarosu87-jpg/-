@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>花火撮影計算ツール</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-bright: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --glow-primary: rgba(59, 130, 246, 0.5);
+            --glow-secondary: rgba(139, 92, 246, 0.3);
+            --canvas-bg: #1a1a1a;
+            --sky-start: #1a1a2e;
+            --sky-end: #16213e;
+            --landscape-start: #2c3e50;
+            --landscape-mid: #34495e;
+            --landscape-end: #2c3e50;
+            --building: #1a252f;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(0, 0, 0, 0.03);
+            --border-subtle: rgba(0, 0, 0, 0.1);
+            --border-bright: rgba(0, 0, 0, 0.2);
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888888;
+            --accent-primary: #2563eb;
+            --accent-secondary: #7c3aed;
+            --accent-success: #059669;
+            --accent-danger: #dc2626;
+            --glow-primary: rgba(37, 99, 235, 0.3);
+            --glow-secondary: rgba(124, 58, 237, 0.2);
+            --canvas-bg: #e5e5e5;
+            --sky-start: #e3f2fd;
+            --sky-end: #bbdefb;
+            --landscape-start: #cfd8dc;
+            --landscape-mid: #b0bec5;
+            --landscape-end: #cfd8dc;
+            --building: #90a4ae;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .app {
+            min-height: 100vh;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                var(--bg-primary);
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header-icon {
+            font-size: 4rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-bright);
+            transform: translateY(-4px);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title i {
+            color: var(--accent-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--glow-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            pointer-events: none;
+        }
+
+        .range-container {
+            margin-top: 1rem;
+        }
+
+        .range-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            margin: 1rem 0;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--glow-primary);
+        }
+
+        .range-value {
+            text-align: right;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.25rem 2rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px var(--glow-primary);
+        }
+
+        .result-box {
+            padding: 1.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+
+        .result-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-success);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        .error-box {
+            padding: 1.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            color: var(--accent-danger);
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+
+        .error-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .canvas-wrapper:hover {
+            opacity: 0.9;
+        }
+
+        .canvas {
+            width: 100%;
+            max-width: 400px;
+            max-height: 400px;
+            aspect-ratio: 4 / 3;
+            border-radius: 12px;
+            background: var(--canvas-bg);
+            border: 1px solid var(--border-subtle);
+            display: block;
+        }
+
+        .canvas.portrait {
+            max-width: 300px;
+            max-height: 400px;
+            aspect-ratio: 3 / 4;
+        }
+
+        .canvas-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .control-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-primary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preset-section {
+            margin-top: 2rem;
+                padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+        }
+
+        .preset-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .preset-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+        }
+
+        .preset-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .comparison-section {
+            margin-top: 2rem;
+        }
+
+        .comparison-table {
+                width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .comparison-table th {
+            background: var(--bg-card);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-title {
+                font-size: 2rem;
+            }
+
+            .theme-toggle {
+                top: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" aria-label="テーマ切り替え">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+
+    <div class="app">
+        <div class="container">
+        <header class="header">
+            <div class="header-icon">
+                <i class="fas fa-camera-retro"></i>
+            </div>
+            <h1 class="header-title">花火撮影計算ツール</h1>
+            <p class="header-subtitle">最適な焦点距離を瞬時に計算</p>
+        </header>
+
+            <div class="grid">
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fas fa-cog"></i>
+                    撮影設定
+                </h2>
+
+                <div class="form-group">
+                    <label for="fireworksSize" class="form-label">花火の号数</label>
+                    <select id="fireworksSize" class="form-input"></select>
+                </div>
+
+                <div class="form-group">
+                        <label for="distance" class="form-label">撮影距離</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="distance" class="form-input" value="300" min="0" step="1">
+                            <span class="input-unit">m</span>
+                </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">打ち上げ配置</label>
+                    
+                    <div style="margin-bottom: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid var(--border-subtle);">
+                        <label style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem; display: block;">大玉用</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="largeTubeWidth" style="font-size: 0.75rem;" class="form-label">筒の幅 (m)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="largeTubeWidth" class="form-input" value="0" min="0" step="0.1">
+                                    <span class="input-unit">m</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="largeTubeCount" style="font-size: 0.75rem;" class="form-label">個数</label>
+                                <input type="number" id="largeTubeCount" class="form-input" value="1" min="1" max="50" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 1rem; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid var(--border-subtle);">
+                        <label style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem; display: block;">ザラ用</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="zaraTubeWidth" style="font-size: 0.75rem;" class="form-label">筒の幅 (m)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="zaraTubeWidth" class="form-input" value="0" min="0" step="0.1">
+                                    <span class="input-unit">m</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="zaraTubeCount" style="font-size: 0.75rem;" class="form-label">個数</label>
+                                <input type="number" id="zaraTubeCount" class="form-input" value="0" min="0" max="50" step="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="landscapeRatio" class="form-label">風景の割合</label>
+                    <div class="range-container">
+                        <input type="range" id="landscapeRatio" class="range-input" min="0" max="99" value="0">
+                        <div class="range-value" id="landscapeRatioValue">0%</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sensorType" class="form-label">センサータイプ</label>
+                    <select id="sensorType" class="form-input">
+                        <option value="fullFrame">フルサイズ (36mm × 24mm)</option>
+                        <option value="apsC">APS-C (23.5mm × 15.6mm)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="orientation" class="form-label">構図</label>
+                    <select id="orientation" class="form-input">
+                            <option value="landscape">横構図</option>
+                        <option value="portrait">縦構図</option>
+                    </select>
+                </div>
+
+                    <button class="btn" id="calculateBtn">計算実行</button>
+
+                    <div class="result-box" id="resultBox">
+                        <div class="result-value" id="resultValue">-</div>
+                        <div class="result-label">推奨焦点距離</div>
+                </div>
+
+                    <div class="error-box" id="errorBox"></div>
+
+                <div class="preset-section">
+                        <h3 style="font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-bookmark"></i>
+                        設定プリセット
+                        </h3>
+                    <div class="preset-input-group">
+                            <input type="text" id="presetName" class="preset-input" placeholder="プリセット名">
+                            <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;" id="savePresetBtn">保存</button>
+                    </div>
+                        <div id="presetButtons" style="margin-top: 0.5rem;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fas fa-eye"></i>
+                    視野プレビュー
+                </h2>
+
+                    <div class="canvas-wrapper" id="canvasWrapper">
+                        <canvas id="canvas" class="canvas"></canvas>
+                        <div id="infoOverlay" style="display: none; position: absolute; top: 1rem; left: 1rem; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 0.875rem; line-height: 1.6; min-width: 200px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span style="color: var(--text-secondary);">焦点距離:</span>
+                                <span id="infoFocalLength" style="font-weight: 600;">-</span>
+                    </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span style="color: var(--text-secondary);">画角幅:</span>
+                                <span id="infoFrameWidth" style="font-weight: 600;">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">距離:</span>
+                                <span id="infoDistance" style="font-weight: 600;">-</span>
+                </div>
+            </div>
+        </div>
+
+                    <div class="canvas-controls">
+                        <button class="control-btn" id="toggleGridBtn">
+                            <i class="fas fa-th"></i> グリッド
+                        </button>
+                        <button class="control-btn" id="toggleInfoBtn">
+                            <i class="fas fa-info-circle"></i> 情報
+                        </button>
+                        <button class="control-btn" id="fullscreenBtn">
+                            <i class="fas fa-expand"></i> 全画面
+                        </button>
+                </div>
+            </div>
+        </div>
+
+            <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-table"></i>
+                計算結果の比較
+            </h2>
+            <div class="comparison-section">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button class="btn" style="padding: 0.75rem 1.5rem; font-size: 0.875rem;" id="addComparisonBtn">現在の結果を追加</button>
+                        <button class="btn" style="padding: 0.75rem 1.5rem; font-size: 0.875rem; background: var(--bg-card);" id="clearComparisonBtn">すべてクリア</button>
+                </div>
+                    <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>号数</th>
+                            <th>距離</th>
+                            <th>焦点距離</th>
+                            <th>画角幅</th>
+                            <th>風景割合</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                        <tbody id="comparisonBody"></tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <canvas id="modalCanvas" style="max-width: 100%; max-height: 80vh; border-radius: 12px; background: var(--canvas-bg);"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // データ定義
+        const FIREWORKS_DATA = {
+            3: { launchHeightM: 120, burstDiameterM: 60 },
+            4: { launchHeightM: 160, burstDiameterM: 130 },
+            5: { launchHeightM: 190, burstDiameterM: 170 },
+            6: { launchHeightM: 220, burstDiameterM: 220 },
+            7: { launchHeightM: 250, burstDiameterM: 240 },
+            8: { launchHeightM: 280, burstDiameterM: 280 },
+            10: { launchHeightM: 330, burstDiameterM: 320 },
+            20: { launchHeightM: 500, burstDiameterM: 480 },
+            30: { launchHeightM: 600, burstDiameterM: 500 },
+            40: { launchHeightM: 800, burstDiameterM: 800 }
+        };
+
+        const SENSORS = {
+                fullFrame: { width: 36, height: 24 },
+                apsC: { width: 23.5, height: 15.6 }
+        };
+
+        const COLORS = {
+            multicolor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffff99'],
+            red: ['#ff0000', '#ff4444', '#ff6666'],
+            blue: ['#0066ff', '#3399ff', '#66b3ff'],
+            green: ['#00ff00', '#44ff44', '#66ff66'],
+            yellow: ['#ffff00', '#ffff44', '#ffff66'],
+            white: ['#ffffff', '#f0f0f0', '#e0e0e0']
+        };
+
+        // ユーティリティ
+        class Utils {
+            static formatDistance(m) {
+                if (m === 0) return '0m';
+                const km = Math.floor(m / 1000);
+                const mRemainder = m % 1000;
+                return km > 0 ? `${km}km ${mRemainder}m` : `${m}m`;
+            }
+
+            static clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
+            }
+
+            static storage = {
+                get(key, defaultValue = null) {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                    } catch {
+                    return defaultValue;
+                }
+                },
+                set(key, value) {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(value));
+                    } catch {}
+                }
+            };
+        }
+
+        // テーマ管理
+        class ThemeManager {
+            constructor() {
+                this.theme = Utils.storage.get('theme', 'dark');
+                this.toggleBtn = document.getElementById('themeToggle');
+                this.icon = document.getElementById('themeIcon');
+                this.init();
+            }
+
+            init() {
+                this.apply(this.theme);
+                this.toggleBtn.addEventListener('click', () => this.toggle());
+            }
+
+            toggle() {
+                this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                this.apply(this.theme);
+                Utils.storage.set('theme', this.theme);
+            }
+
+            apply(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                this.icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        // 計算エンジン
+        class Calculator {
+            static compute(inputs) {
+                const { fireworksSize, distance, largeTubeWidth, largeTubeCount, zaraTubeWidth, zaraTubeCount, landscapeRatio, sensorType, orientation } = inputs;
+                
+                const data = FIREWORKS_DATA[fireworksSize];
+                if (!data) return { success: false, message: '無効な号数です' };
+
+                const sensor = SENSORS[sensorType];
+                const sensorWidth = orientation === 'landscape' ? sensor.width : sensor.height;
+                const sensorHeight = orientation === 'landscape' ? sensor.height : sensor.width;
+
+                const topHeight = data.launchHeightM + data.burstDiameterM / 2;
+                const sceneHeight = topHeight / (1 - landscapeRatio);
+
+                let focalLength;
+                let frameWidth;
+                let frameHeight;
+
+                // 大玉とザラの配置から左右の打ち上げ範囲を計算
+                // 大玉の範囲 = 筒の幅 × (個数 - 1) + 花火の開花直径
+                let largeSpan = 0;
+                if (largeTubeCount > 1 && largeTubeWidth > 0) {
+                    largeSpan = largeTubeWidth * (largeTubeCount - 1) + data.burstDiameterM;
+                } else if (largeTubeCount === 1) {
+                    largeSpan = data.burstDiameterM;
+                } else {
+                    largeSpan = data.burstDiameterM;
+                }
+
+                // ザラの範囲（ザラの開花直径は小さいと仮定して30mとする）
+                const zaraBurstDiameter = 30; // ザラの開花直径（仮定）
+                let zaraSpan = 0;
+                if (zaraTubeCount > 1 && zaraTubeWidth > 0) {
+                    zaraSpan = zaraTubeWidth * (zaraTubeCount - 1) + zaraBurstDiameter;
+                } else if (zaraTubeCount === 1) {
+                    zaraSpan = zaraBurstDiameter;
+                }
+
+                // 全体の左右の打ち上げ範囲（大玉とザラの最大値、または統合）
+                let horizontalSpan = Math.max(largeSpan, zaraSpan);
+                if (largeSpan > 0 && zaraSpan > 0) {
+                    // 両方ある場合、範囲を統合（大玉とザラが重なる可能性を考慮）
+                    horizontalSpan = Math.max(largeSpan, zaraSpan);
+                } else if (largeSpan > 0) {
+                    horizontalSpan = largeSpan;
+                } else if (zaraSpan > 0) {
+                    horizontalSpan = zaraSpan;
+                } else {
+                    horizontalSpan = data.burstDiameterM;
+                }
+
+                // 左右の打ち上げ範囲が指定されている場合
+                if (horizontalSpan > 0) {
+                    // 左右の打ち上げ範囲 = 画角幅 になるように焦点距離を計算
+                    focalLength = (sensorWidth * distance) / horizontalSpan;
+                    
+                    // この焦点距離で縦方向の制約も満たせるか確認
+                    frameHeight = (sensorHeight * distance) / focalLength;
+                    
+                    if (frameHeight < sceneHeight) {
+                        // 縦方向の制約を満たせない場合、縦方向を優先
+                        focalLength = (sensorHeight * distance) / sceneHeight;
+                        frameWidth = (sensorWidth * distance) / focalLength;
+                        frameHeight = sceneHeight;
+                    } else {
+                        // 横方向の制約を満たせる場合
+                        frameWidth = horizontalSpan;
+                    }
+                } else {
+                    // 左右の打ち上げ範囲が指定されていない場合
+                    // 花火の直径を基準に計算
+                    const subjectWidth = data.burstDiameterM;
+                    const fVertical = (sensorHeight * distance) / sceneHeight;
+                    const fHorizontal = (sensorWidth * distance) / subjectWidth;
+                    focalLength = Math.min(fVertical, fHorizontal);
+                    frameWidth = (sensorWidth * distance) / focalLength;
+                    frameHeight = (sensorHeight * distance) / focalLength;
+                }
+
+                if (focalLength <= 0) {
+                    return { success: false, message: '計算結果が不正です' };
+                }
+
+                return {
+                    success: true,
+                    focalLength,
+                    frameWidth,
+                    frameHeight,
+                    horizontalSpan,
+                    largeSpan,
+                    zaraSpan,
+                    ...data,
+                    inputs
+                };
+            }
+        }
+
+        // 視覚化エンジン
+        class Visualizer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.baseWidth = 400;
+                this.baseHeight = 300;
+                this.showGrid = false;
+            }
+
+            draw(result) {
+                if (!result.success) return;
+
+                const { focalLength, frameWidth, frameHeight, burstDiameterM, launchHeightM, horizontalSpan, inputs } = result;
+                const { distance, largeTubeWidth, largeTubeCount, zaraTubeWidth, zaraTubeCount, landscapeRatio, sensorType, orientation } = inputs;
+                const fireworksColor = 'multicolor';
+
+                // 構図に応じてcanvasサイズを決定
+                const isPortrait = orientation === 'portrait';
+                const width = isPortrait ? this.baseHeight : this.baseWidth;
+                const height = isPortrait ? this.baseWidth : this.baseHeight;
+
+                this.canvas.width = width;
+                this.canvas.height = height;
+                this.ctx = this.canvas.getContext('2d');
+                
+                // CSSクラスを更新
+                this.canvas.classList.toggle('portrait', isPortrait);
+                const scale = Math.min(width / frameWidth, height / frameHeight);
+                const frameW = width;
+                const frameH = height;
+
+                // 背景（canvas全体）
+                const gradient = this.ctx.createLinearGradient(0, 0, 0, frameH);
+                gradient.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue('--sky-start').trim() || '#1a1a2e');
+                gradient.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue('--sky-end').trim() || '#16213e');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, frameW, frameH);
+
+                // 風景
+                if (landscapeRatio > 0) {
+                    const landscapeH = frameH * landscapeRatio;
+                    const landscapeY = frameH - landscapeH;
+                    const landGrad = this.ctx.createLinearGradient(0, landscapeY, 0, frameH);
+                    landGrad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue('--landscape-start').trim() || '#2c3e50');
+                    landGrad.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue('--landscape-end').trim() || '#2c3e50');
+                    this.ctx.fillStyle = landGrad;
+                    this.ctx.fillRect(0, landscapeY, frameW, landscapeH);
+                }
+
+                // グリッド
+                if (this.showGrid) {
+                    this.drawGrid(frameW, frameH);
+                }
+
+                // 花火
+                this.drawFireworks(frameW, frameH, burstDiameterM, scale, largeTubeWidth, largeTubeCount, zaraTubeWidth, zaraTubeCount, launchHeightM, landscapeRatio, fireworksColor);
+            }
+
+            drawGrid(w, h) {
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                this.ctx.lineWidth = 1;
+                for (let i = 1; i < 3; i++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo((w / 3) * i, 0);
+                    this.ctx.lineTo((w / 3) * i, h);
+                    this.ctx.stroke();
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, (h / 3) * i);
+                    this.ctx.lineTo(w, (h / 3) * i);
+                    this.ctx.stroke();
+                }
+            }
+
+            drawFireworks(w, h, largeBurstDiameter, scale, largeTubeWidth, largeTubeCount, zaraTubeWidth, zaraTubeCount, launchHeight, landscapeRatio, color) {
+                // 打ち上げ高さを考慮して開花の中心位置を計算
+                // 開花の中心 = 打ち上げ高さ + 開花直径/2
+                // 大玉とザラは同じ打ち上げ高さで開花する
+                const centerY = (launchHeight * scale) + (largeBurstDiameter * scale) / 2;
+                const colors = COLORS[color] || COLORS.multicolor;
+                const zaraBurstDiameter = 30; // ザラの開花直径
+
+                // 大玉の配置を計算
+                let largePositions = [];
+                if (largeTubeCount > 1 && largeTubeWidth > 0) {
+                    const totalWidth = largeTubeWidth * (largeTubeCount - 1);
+                    const startX = -totalWidth / 2;
+                    for (let i = 0; i < largeTubeCount; i++) {
+                        largePositions.push(startX + (largeTubeWidth * i));
+                    }
+                } else if (largeTubeCount === 1) {
+                    largePositions = [0];
+                }
+
+                // ザラの配置を計算
+                let zaraPositions = [];
+                if (zaraTubeCount > 1 && zaraTubeWidth > 0) {
+                    const totalWidth = zaraTubeWidth * (zaraTubeCount - 1);
+                    const startX = -totalWidth / 2;
+                    for (let i = 0; i < zaraTubeCount; i++) {
+                        zaraPositions.push(startX + (zaraTubeWidth * i));
+                    }
+                } else if (zaraTubeCount === 1) {
+                    zaraPositions = [0];
+                }
+
+                // 大玉を描画
+                largePositions.forEach(xOffset => {
+                    const radius = (largeBurstDiameter * scale) / 2;
+                    let centerX = w / 2 + (xOffset * scale);
+                    centerX = Math.max(radius, Math.min(w - radius, centerX));
+
+                    // 大玉のグラデーション（大きめ、明るめ）
+                    const gradient = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                    colors.forEach((c, i) => {
+                        gradient.addColorStop(i / (colors.length - 1), c);
+                    });
+
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // 火花
+                    this.ctx.fillStyle = colors[0];
+                    for (let i = 0; i < 20; i++) {
+                        const angle = (i / 20) * Math.PI * 2;
+                        const dist = radius + Math.random() * 20;
+                        const x = centerX + Math.cos(angle) * dist;
+                        const y = centerY + Math.sin(angle) * dist;
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, 1 + Math.random() * 2, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                });
+
+                // ザラを描画（小さめ、やや暗め）
+                zaraPositions.forEach(xOffset => {
+                    const radius = (zaraBurstDiameter * scale) / 2;
+                    let centerX = w / 2 + (xOffset * scale);
+                    centerX = Math.max(radius, Math.min(w - radius, centerX));
+
+                    // ザラのグラデーション（小さめ）
+                    const gradient = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                    const zaraColors = ['#ffaa00', '#ff6600', '#ff3300'];
+                    zaraColors.forEach((c, i) => {
+                        gradient.addColorStop(i / (zaraColors.length - 1), c);
+                    });
+
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // 火花（少なめ）
+                    this.ctx.fillStyle = '#ffaa00';
+                    for (let i = 0; i < 10; i++) {
+                        const angle = (i / 10) * Math.PI * 2;
+                        const dist = radius + Math.random() * 10;
+                        const x = centerX + Math.cos(angle) * dist;
+                        const y = centerY + Math.sin(angle) * dist;
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, 0.5 + Math.random() * 1, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                });
+            }
+        }
+
+        // アプリケーション
+        class App {
+            constructor() {
+                this.elements = this.initElements();
+                this.theme = new ThemeManager();
+                this.visualizer = new Visualizer(this.elements.canvas);
+                this.comparisons = Utils.storage.get('comparisons', []);
+                this.presets = Utils.storage.get('presets', []);
+                this.init();
+            }
+
+            initElements() {
+                return {
+                    fireworksSize: document.getElementById('fireworksSize'),
+                    distance: document.getElementById('distance'),
+                    largeTubeWidth: document.getElementById('largeTubeWidth'),
+                    largeTubeCount: document.getElementById('largeTubeCount'),
+                    zaraTubeWidth: document.getElementById('zaraTubeWidth'),
+                    zaraTubeCount: document.getElementById('zaraTubeCount'),
+                    landscapeRatio: document.getElementById('landscapeRatio'),
+                    landscapeRatioValue: document.getElementById('landscapeRatioValue'),
+                    sensorType: document.getElementById('sensorType'),
+                    orientation: document.getElementById('orientation'),
+                    calculateBtn: document.getElementById('calculateBtn'),
+                    resultBox: document.getElementById('resultBox'),
+                    resultValue: document.getElementById('resultValue'),
+                    errorBox: document.getElementById('errorBox'),
+                    canvas: document.getElementById('canvas'),
+                    canvasWrapper: document.getElementById('canvasWrapper'),
+                    toggleGridBtn: document.getElementById('toggleGridBtn'),
+                    toggleInfoBtn: document.getElementById('toggleInfoBtn'),
+                    fullscreenBtn: document.getElementById('fullscreenBtn'),
+                    infoOverlay: document.getElementById('infoOverlay'),
+                    infoFocalLength: document.getElementById('infoFocalLength'),
+                    infoFrameWidth: document.getElementById('infoFrameWidth'),
+                    infoDistance: document.getElementById('infoDistance'),
+                    previewModal: document.getElementById('previewModal'),
+                    modalClose: document.getElementById('modalClose'),
+                    modalCanvas: document.getElementById('modalCanvas'),
+                    presetName: document.getElementById('presetName'),
+                    savePresetBtn: document.getElementById('savePresetBtn'),
+                    presetButtons: document.getElementById('presetButtons'),
+                    addComparisonBtn: document.getElementById('addComparisonBtn'),
+                    clearComparisonBtn: document.getElementById('clearComparisonBtn'),
+                    comparisonBody: document.getElementById('comparisonBody')
+                };
+            }
+
+            init() {
+                this.populateFireworks();
+                this.setupEvents();
+                this.renderPresets();
+                this.renderComparisons();
+                this.calculate();
+            }
+
+            populateFireworks() {
+                const sizes = Object.keys(FIREWORKS_DATA).map(Number).sort((a, b) => a - b);
+                this.elements.fireworksSize.innerHTML = sizes.map(size => 
+                    `<option value="${size}">${size}号</option>`
+                ).join('');
+                this.elements.fireworksSize.value = 10;
+            }
+
+            setupEvents() {
+                // 計算
+                this.elements.calculateBtn.addEventListener('click', () => this.calculate());
+                [this.elements.fireworksSize, this.elements.distance, this.elements.largeTubeWidth, this.elements.largeTubeCount,
+                 this.elements.zaraTubeWidth, this.elements.zaraTubeCount, this.elements.landscapeRatio, 
+                 this.elements.sensorType, this.elements.orientation].forEach(el => {
+                    el.addEventListener('change', () => this.calculate());
+                    el.addEventListener('input', () => {
+                        if (el === this.elements.landscapeRatio) {
+                            this.elements.landscapeRatioValue.textContent = el.value + '%';
+                        }
+                        this.calculate();
+                    });
+                });
+
+                // プレビュー
+                this.elements.canvasWrapper.addEventListener('click', () => this.openModal());
+                this.elements.toggleGridBtn.addEventListener('click', () => {
+                    this.visualizer.showGrid = !this.visualizer.showGrid;
+                    this.elements.toggleGridBtn.classList.toggle('active', this.visualizer.showGrid);
+                    this.calculate();
+                });
+                this.showInfo = false;
+                this.elements.toggleInfoBtn.addEventListener('click', () => {
+                    this.showInfo = !this.showInfo;
+                    this.elements.toggleInfoBtn.classList.toggle('active', this.showInfo);
+                    this.updateInfoDisplay();
+                });
+                this.elements.modalClose.addEventListener('click', () => this.closeModal());
+                this.elements.previewModal.addEventListener('click', (e) => {
+                    if (e.target === this.elements.previewModal) this.closeModal();
+                });
+
+                // プリセット
+                this.elements.savePresetBtn.addEventListener('click', () => this.savePreset());
+                this.elements.addComparisonBtn.addEventListener('click', () => this.addComparison());
+                this.elements.clearComparisonBtn.addEventListener('click', () => this.clearComparisons());
+            }
+
+            getInputs() {
+                return {
+                    fireworksSize: parseFloat(this.elements.fireworksSize.value),
+                    distance: parseFloat(this.elements.distance.value) || 0,
+                    largeTubeWidth: parseFloat(this.elements.largeTubeWidth.value) || 0,
+                    largeTubeCount: parseInt(this.elements.largeTubeCount.value) || 1,
+                    zaraTubeWidth: parseFloat(this.elements.zaraTubeWidth.value) || 0,
+                    zaraTubeCount: parseInt(this.elements.zaraTubeCount.value) || 0,
+                    landscapeRatio: parseFloat(this.elements.landscapeRatio.value) / 100,
+                    sensorType: this.elements.sensorType.value,
+                    orientation: this.elements.orientation.value
+                };
+            }
+
+            calculate() {
+                const inputs = this.getInputs();
+                const result = Calculator.compute(inputs);
+
+                this.elements.resultBox.classList.remove('show');
+                this.elements.errorBox.classList.remove('show');
+
+                    if (result.success) {
+                    this.elements.resultValue.textContent = Math.round(result.focalLength) + 'mm';
+                    this.elements.resultBox.classList.add('show');
+                    this.visualizer.draw(result);
+                    this.currentResult = result;
+                    this.updateInfoDisplay();
+                    } else {
+                    this.elements.errorBox.textContent = result.message;
+                    this.elements.errorBox.classList.add('show');
+                }
+            }
+
+            updateInfoDisplay() {
+                if (!this.currentResult || !this.currentResult.success) return;
+                if (this.showInfo) {
+                    this.elements.infoOverlay.style.display = 'block';
+                    this.elements.infoFocalLength.textContent = Math.round(this.currentResult.focalLength) + 'mm';
+                    this.elements.infoFrameWidth.textContent = Utils.formatDistance(Math.round(this.currentResult.frameWidth));
+                    this.elements.infoDistance.textContent = Utils.formatDistance(Math.round(this.currentResult.inputs.distance));
+                } else {
+                    this.elements.infoOverlay.style.display = 'none';
+                }
+            }
+
+            openModal() {
+                if (!this.currentResult) return;
+                const modalCanvas = this.elements.modalCanvas;
+                const modalViz = new Visualizer(modalCanvas);
+                const isPortrait = this.currentResult.inputs.orientation === 'portrait';
+                const maxWidth = Math.min(window.innerWidth * 0.8, 800);
+                const maxHeight = Math.min(window.innerHeight * 0.8, 600);
+                
+                if (isPortrait) {
+                    modalViz.baseWidth = Math.min(maxHeight, 600);
+                    modalViz.baseHeight = Math.min(maxWidth, 800);
+                } else {
+                    modalViz.baseWidth = Math.min(maxWidth, 800);
+                    modalViz.baseHeight = Math.min(maxHeight, 600);
+                }
+                modalViz.showGrid = this.visualizer.showGrid;
+                modalViz.draw(this.currentResult);
+                this.elements.previewModal.classList.add('show');
+            }
+
+            closeModal() {
+                this.elements.previewModal.classList.remove('show');
+            }
+
+            savePreset() {
+                const name = this.elements.presetName.value.trim();
+                if (!name) return;
+                this.presets.push({ id: Date.now(), name, inputs: this.getInputs() });
+                Utils.storage.set('presets', this.presets);
+                this.elements.presetName.value = '';
+                this.renderPresets();
+            }
+
+            loadPreset(preset) {
+                Object.keys(preset.inputs).forEach(key => {
+                    const el = this.elements[key];
+                    if (el) {
+                        if (key === 'landscapeRatio') {
+                            el.value = Math.round(preset.inputs[key] * 100);
+                            this.elements.landscapeRatioValue.textContent = el.value + '%';
+                    } else {
+                            el.value = preset.inputs[key];
+                        }
+                    }
+                });
+                this.calculate();
+            }
+
+            renderPresets() {
+                this.elements.presetButtons.innerHTML = this.presets.map(p => `
+                    <button class="preset-btn" onclick="app.loadPreset(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                        ${p.name}
+                    </button>
+                `).join('');
+            }
+
+            addComparison() {
+                if (!this.currentResult || !this.currentResult.success) return;
+                const inputs = this.getInputs();
+                this.comparisons.push({
+                    id: Date.now(),
+                    fireworksSize: inputs.fireworksSize,
+                    distance: inputs.distance,
+                    focalLength: Math.round(this.currentResult.focalLength),
+                    frameWidth: this.currentResult.frameWidth,
+                    landscapeRatio: Math.round(inputs.landscapeRatio * 100)
+                });
+                Utils.storage.set('comparisons', this.comparisons);
+                this.renderComparisons();
+            }
+
+            clearComparisons() {
+                if (this.comparisons.length === 0) return;
+                if (confirm('すべての比較結果を削除しますか？')) {
+                    this.comparisons = [];
+                    Utils.storage.set('comparisons', this.comparisons);
+                    this.renderComparisons();
+                }
+            }
+
+            renderComparisons() {
+                if (this.comparisons.length === 0) {
+                    this.elements.comparisonBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">比較結果がありません</td></tr>';
+                        return;
+                    }
+                this.elements.comparisonBody.innerHTML = this.comparisons.map(c => `
+                    <tr>
+                        <td>${c.fireworksSize}号</td>
+                        <td>${Utils.formatDistance(Math.round(c.distance))}</td>
+                        <td>${c.focalLength}mm</td>
+                        <td>${Utils.formatDistance(Math.round(c.frameWidth))}</td>
+                        <td>${c.landscapeRatio}%</td>
+                        <td>
+                            <button class="preset-btn" onclick="app.deleteComparison(${c.id})" style="color: var(--accent-danger);">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            deleteComparison(id) {
+                this.comparisons = this.comparisons.filter(c => c.id !== id);
+                Utils.storage.set('comparisons', this.comparisons);
+                this.renderComparisons();
+            }
+        }
+
+        // 初期化
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new App();
+        });
+    </script>
+</body>
+</html>
